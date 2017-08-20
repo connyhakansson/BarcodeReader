@@ -64,30 +64,22 @@ class BarcodeScannerViewController: UIViewController, AVCaptureMetadataOutputObj
 
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         
-        // Check if the metadataObjects array is not nil and it contains at least one object.
+        // Check if the metadataObjects contains at least one object.
         if metadataObjects.count == 0 {
             codeView?.frame = CGRect.zero
             codeLabel.text = "Code: code not detected"
             return
         }
         
-        // Ignoring metadata objects of type AVMetadataFaceObject as it wont cast to AVMetadataMachineReadableCodeObject
-        if let metadataObj = metadataObjects[0] as? AVMetadataFaceObject {
-            print("Ignoring Metadata Object of type FACE")
+        if let metadataObj = metadataObjects[0] as? AVMetadataMachineReadableCodeObject {
+            let barCodeObject = previewLayer?.transformedMetadataObject(for: metadataObj as AVMetadataMachineReadableCodeObject) as! AVMetadataMachineReadableCodeObject
+            codeView?.frame = barCodeObject.bounds
+            codeLabel.text = metadataObj.stringValue ?? ""
+        } else {
+            print("Ignoring Metadata Object of not compliant type of MachineReadbleCodeObject")
             return
         }
-        
-        let metadataObj = metadataObjects[0] as! AVMetadataMachineReadableCodeObject
-        
-        // If you only want to process some specific code, you can use the metadataObj.type to select specific codes
-        let barCodeObject = previewLayer?.transformedMetadataObject(for: metadataObj as AVMetadataMachineReadableCodeObject) as! AVMetadataMachineReadableCodeObject
-            codeView?.frame = barCodeObject.bounds
-                
-        if metadataObj.stringValue != nil {
-                codeLabel.text = metadataObj.stringValue
-        }
     }
-        
         
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
