@@ -22,44 +22,42 @@ class BarcodeScannerViewController: UIViewController, AVCaptureMetadataOutputObj
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        do {
-            let captureDevice = AVCaptureDevice.default(for: AVMediaType.video)
-            
-            captureInput = try AVCaptureDeviceInput(device: captureDevice!)
-            captureOutput = AVCaptureMetadataOutput()
-            captureOutput?.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
-
-            scanSession = AVCaptureSession()
-            scanSession!.addInput(captureInput!)
-            scanSession!.addOutput(captureOutput!)
-            
-            // Set the input and output BEFORE adding supported code types or the array will be empty
-            captureOutput?.metadataObjectTypes = captureOutput!.availableMetadataObjectTypes
-            
-            previewLayer = AVCaptureVideoPreviewLayer(session: scanSession!)
-            previewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
-            previewLayer?.frame = scanView.layer.bounds
-            scanView.layer.addSublayer(previewLayer!)
-            scanView.layer.borderColor = UIColor.green.cgColor
-            scanView.layer.borderWidth = 4
-            
-            
-            scanSession?.startRunning()
-            
-            codeView = UIView()
-            
-            if let codeView = codeView {
-                codeView.layer.borderColor = UIColor.green.cgColor
-                codeView.layer.borderWidth = 2
-                view.addSubview(codeView)
-                view.bringSubview(toFront: codeView)
-            }
-            
-            // Do any additional setup after loading the view.
-        } catch {
-                print(error)
+        guard let captureDevice = AVCaptureDevice.default(for: AVMediaType.video) else {
+            preconditionFailure("Cant set default MediaType video")
         }
 
+        do {
+            captureInput = try AVCaptureDeviceInput(device: captureDevice)
+        } catch {
+            print(error)
+        }
+        
+        captureOutput = AVCaptureMetadataOutput()
+        captureOutput?.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+
+        scanSession = AVCaptureSession()
+        scanSession?.addInput(captureInput!)
+        scanSession?.addOutput(captureOutput!)
+            
+        captureOutput?.metadataObjectTypes = captureOutput?.availableMetadataObjectTypes
+            
+        previewLayer = AVCaptureVideoPreviewLayer(session: scanSession!)
+        previewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
+        previewLayer?.frame = scanView.layer.bounds
+        scanView.layer.addSublayer(previewLayer!)
+        scanView.layer.borderColor = UIColor.green.cgColor
+        scanView.layer.borderWidth = 4
+        
+        scanSession?.startRunning()
+            
+        codeView = UIView()
+        if let codeView = codeView {
+            codeView.layer.borderColor = UIColor.green.cgColor
+            codeView.layer.borderWidth = 2
+            view.addSubview(codeView)
+            view.bringSubview(toFront: codeView)
+        }
+        // Do any additional setup after loading the view.
     }
 
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
